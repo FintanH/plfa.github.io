@@ -81,7 +81,7 @@ successor of two; and so on.
 Write out `7` in longhand.
 
 ```
--- Your code goes here
+-- suc (suc (suc (suc (suc (suc (suc zero)))))) : ℕ
 ```
 
 
@@ -430,7 +430,24 @@ other word for evidence, which we will use interchangeably, is _proof_.
 Compute `3 + 4`, writing out your reasoning as a chain of equations, using the equations for `+`.
 
 ```
--- Your code goes here
+_ : 3 + 4 ≡ 7
+_ =
+  begin
+    3 + 4
+  ≡⟨⟩
+    suc (2 + 4)
+  ≡⟨⟩
+    suc (suc (1 + 4))
+  ≡⟨⟩
+    suc (suc (suc (0 + 4)))
+  ≡⟨⟩
+    suc (suc (suc 4))
+  ≡⟨⟩
+    7
+  ∎
+
+_ : 3 + 4 ≡ 7
+_ = refl
 ```
 
 
@@ -492,7 +509,19 @@ Compute `3 * 4`, writing out your reasoning as a chain of equations, using the e
 (You do not need to step through the evaluation of `+`.)
 
 ```
--- Your code goes here
+_ : 3 * 4 ≡ 12
+_ =
+  begin
+    3 * 4
+  ≡⟨⟩
+    4 + (2 * 4)
+  ≡⟨⟩
+    8 + (1 * 4)
+  ≡⟨⟩
+    12 + 0
+  ≡⟨⟩
+    12
+  ∎
 ```
 
 
@@ -506,7 +535,27 @@ Define exponentiation, which is given by the following equations:
 Check that `3 ^ 4` is `81`.
 
 ```
--- Your code goes here
+_^_ : ℕ → ℕ → ℕ
+m ^ 0 = 1
+m ^ (suc n) = m * (m ^ n)
+
+_ : 3 ^ 4 ≡ 81
+_ =
+  begin
+    3 ^ 4
+  ≡⟨⟩
+    3 * (3 ^ 3)
+  ≡⟨⟩
+    9 * (3 ^ 2)
+  ≡⟨⟩
+    27 * (3 ^ 1)
+  ≡⟨⟩
+    81 * (3 ^ 0)
+  ≡⟨⟩
+    81 * 1
+  ≡⟨⟩
+    81
+  ∎
 ```
 
 
@@ -540,6 +589,7 @@ smaller numbers.
 
 For example, let's subtract two from three:
 ```
+_ : 3 ∸ 2 ≡ 1
 _ =
   begin
     3 ∸ 2
@@ -554,6 +604,7 @@ _ =
 We did not use the second equation at all, but it will be required
 if we try to subtract a larger number from a smaller one:
 ```
+_ : 2 ∸ 3 ≡ 0
 _ =
   begin
     2 ∸ 3
@@ -571,7 +622,33 @@ _ =
 Compute `5 ∸ 3` and `3 ∸ 5`, writing out your reasoning as a chain of equations.
 
 ```
--- Your code goes here
+_ : 5 ∸ 3 ≡ 2
+_ =
+  begin
+    5 ∸ 3
+  ≡⟨⟩
+    4 ∸ 2
+  ≡⟨⟩
+    3 ∸ 1
+  ≡⟨⟩
+    2 ∸ 0
+  ≡⟨⟩
+    2
+  ∎
+
+_ : 3 ∸ 5 ≡ 0
+_ =
+  begin
+    3 ∸ 5
+  ≡⟨⟩
+    2 ∸ 4
+  ≡⟨⟩
+    1 ∸ 3
+  ≡⟨⟩
+    0 ∸ 2
+  ≡⟨⟩
+    0
+  ∎
 ```
 
 
@@ -762,6 +839,12 @@ Begin by typing:
     _+_ : ℕ → ℕ → ℕ
     m + n = ?
 
+```
+_:+:_ : ℕ → ℕ → ℕ
+zero :+: n = n
+suc m :+: n = suc (m :+: n)
+```
+
 The question mark indicates that you would like Agda to help with
 filling in that part of the code. If you type `C-c C-l` (pressing
 the control key while hitting the `c` key followed by the `l` key),
@@ -918,9 +1001,175 @@ represents a positive natural, and represent zero by `⟨⟩ O`.
 Confirm that these both give the correct answer for zero through four.
 
 ```
--- Your code goes here
-```
+inc : Bin → Bin
+inc ⟨⟩ = ⟨⟩
+inc (b O) = b I
+inc (⟨⟩ I) = ⟨⟩ I O
+inc (b I) = (inc b) O
 
+to : ℕ → Bin
+to n = go n (⟨⟩ O)
+  where
+    go : ℕ → Bin → Bin
+    go zero b = b
+    go (suc n) b = go n (inc b)
+
+from : Bin → ℕ
+from b = go b 0 0
+  where
+    -- n is the accumulator
+    -- p is the current power of 2
+    go : Bin → ℕ → ℕ → ℕ
+    go ⟨⟩ n _ = n
+    go (b O) n p = go b n (suc p)
+    go (b I) n p = go b (n + 2 ^ p) (suc p)
+
+_ : inc (⟨⟩ I O) ≡ ⟨⟩ I I
+_ =
+  begin
+    inc (⟨⟩ I O)
+  ≡⟨⟩
+    ⟨⟩ I I
+  ∎
+
+_ : inc (⟨⟩ O I) ≡ ⟨⟩ I O
+_ =
+  begin
+    inc (⟨⟩ O I)
+  ≡⟨⟩
+    ⟨⟩ I O
+  ∎
+
+_ : inc (⟨⟩ I I) ≡ ⟨⟩ I O O
+_ =
+  begin
+    inc (⟨⟩ I I)
+  ≡⟨⟩
+    ⟨⟩ I O O
+  ∎
+
+_ : inc (⟨⟩ O O O O) ≡ ⟨⟩ O O O I
+_ =
+  begin
+    inc (⟨⟩ O O O O)
+  ≡⟨⟩
+    (inc ⟨⟩ O O O) I
+  ≡⟨⟩
+    (inc ⟨⟩ O O) O I
+  ≡⟨⟩
+    (inc ⟨⟩ O) O O I
+  ≡⟨⟩
+    (inc ⟨⟩ O) O O I
+  ≡⟨⟩
+    (inc ⟨⟩) O O O I
+  ≡⟨⟩
+    ⟨⟩ O O O I
+  ∎
+
+_ : inc (⟨⟩ O O O I) ≡ ⟨⟩ O O I O
+_ =
+  begin
+    inc (⟨⟩ O O O I)
+  ≡⟨⟩
+    ⟨⟩ O O I O
+  ∎
+
+_ : inc (⟨⟩ O O I O) ≡ ⟨⟩ O O I I
+_ =
+  begin
+    inc (⟨⟩ O O I O)
+  ≡⟨⟩
+    ⟨⟩ O O I I
+  ∎
+
+_ : inc (⟨⟩ O O I I) ≡ ⟨⟩ O I O O
+_ =
+  begin
+    inc (⟨⟩ O O I I)
+  ≡⟨⟩
+    ⟨⟩ O I O O
+  ∎
+
+_ : from (⟨⟩ O O O O) ≡ 0
+_ =
+  begin
+    from (⟨⟩ O O O O)
+  ≡⟨⟩
+    0
+  ∎
+
+_ : from (⟨⟩ O O O I) ≡ 1
+_ =
+  begin
+    from (⟨⟩ O O O I)
+  ≡⟨⟩
+    1
+  ∎
+
+_ : from (⟨⟩ O O I O) ≡ 2
+_ =
+  begin
+    from (⟨⟩ O O I O)
+  ≡⟨⟩
+    2
+  ∎
+
+_ : from (⟨⟩ O O I I) ≡ 3
+_ =
+  begin
+    from (⟨⟩ O O I I)
+  ≡⟨⟩
+    3
+  ∎
+
+_ : from (⟨⟩ O I O O) ≡ 4
+_ =
+  begin
+    from (⟨⟩ O I O O)
+  ≡⟨⟩
+    4
+  ∎
+
+_ : to 0 ≡ ⟨⟩ O
+_ =
+  begin
+    to 0
+  ≡⟨⟩
+    ⟨⟩ O
+  ∎
+
+_ : to 1 ≡ ⟨⟩ I
+_ =
+  begin
+    to 1
+  ≡⟨⟩
+    ⟨⟩ I
+  ∎
+
+_ : to 2 ≡ ⟨⟩ I O
+_ =
+  begin
+    to 2
+  ≡⟨⟩
+    ⟨⟩ I O
+  ∎
+
+_ : to 3 ≡ ⟨⟩ I I
+_ =
+  begin
+    to 3
+  ≡⟨⟩
+    ⟨⟩ I I
+  ∎
+
+_ : to 4 ≡ ⟨⟩ I O O
+_ =
+  begin
+    to 4
+  ≡⟨⟩
+    ⟨⟩ I O O
+  ∎
+```
 
 ## Standard library
 
